@@ -1,87 +1,75 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-
 function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState(localStorage.getItem("isAdmin") === "true");
-
   const [form, setForm] = useState({
-    name: "",
-    code: "",
-    category: "",
-    price: "",
-    quantity: "",
-    description: ""
+    name: "", code: "", category: "", price: "", quantity: "",  description: ""
   });
 
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
+
+  // get  the product data
   useEffect(() => {
-    if (!isAdmin) return;
-
-    fetch(`http://127.0.0.1:8000/api/products/${id}/`)
+    if (isAdmin) {
+      fetch("http://127.0.0.1:8000/api/products/" + id + "/")
       .then(res => res.json())
-      .then(data => {
-        setForm(data);
-      });
-  }, [id, isAdmin]);
+        .then(data => {
+          setForm({
+            name: data.name, code: data.code, category: data.category, price: data.price, quantity: data.quantity, description: data.description
+          });
+        });
+    }
+  }, [id]);
 
+  // input change
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // update product
   const handleUpdate = (e) => {
     e.preventDefault();
 
-    if (!isAdmin) {
-      alert("Admin access required to update products.");
-      return;
-    }
+    if (!isAdmin) return alert("Admin only");
 
-    fetch(`http://127.0.0.1:8000/api/products/${id}/`, {
-      method: "PATCH",
+    fetch("http://127.0.0.1:8000/api/products/" + id + "/", {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer admin123"
+        Authorization: "Bearer admin123"
       },
       body: JSON.stringify(form)
     })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Update failed");
-        }
-        return res.json();
-      })
+      .then(res => res.json())
       .then(() => {
-        alert("Updated ho gaya");
+        alert("Updated");
         navigate("/");
       })
-      .catch(() => {
-        alert("Error aaya");
-      });
+      .catch(() => alert("Error"));
   };
 
+  // if not admin
   if (!isAdmin) {
     return (
-      <div className="card">
-        <h2 className="page-title">Admin access required</h2>
-        <p>Please login as admin on the dashboard before editing a product.</p>
-        <Link className="button-pill" to="/">Back to Dashboard</Link>
+      <div>
+        <h2>Admin only</h2>
+        <Link to="/"><button>Back</button></Link>
       </div>
     );
   }
 
   return (
-    <form className="form-card" onSubmit={handleUpdate}>
-      <h2 className="card-title">Edit Product</h2>
-      <div className="field-row">
-        <input className="input-field" name="name" value={form.name} onChange={handleChange} />
-        <input className="input-field" name="code" value={form.code} onChange={handleChange} />
-        <input className="input-field" name="category" value={form.category} onChange={handleChange} />
-        <input className="input-field" name="price" value={form.price} onChange={handleChange} />
-        <input className="input-field" name="quantity" value={form.quantity} onChange={handleChange} />
-        <textarea className="input-field" name="description" value={form.description} onChange={handleChange} />
-      </div>
-      <button className="button-pill">Save Changes</button>
+    <form onSubmit={handleUpdate}>
+      <h2>Edit Product</h2>
+      <input name="name" value={form.name} onChange={handleChange} placeholder="Name" />
+      <input name="code" value={form.code} onChange={handleChange} placeholder="Code" />
+      <input name="category" value={form.category} onChange={handleChange} placeholder="Category" />
+      <input name="price" value={form.price} onChange={handleChange} placeholder="Price" />
+      <input name="quantity" value={form.quantity} onChange={handleChange} placeholder="Quantity" />
+      <textarea name="description" value={form.description} onChange={handleChange} placeholder="Description" />
+
+      <button>Update</button>
     </form>
   );
 }

@@ -1,211 +1,81 @@
-.App {
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #e6e9ef; 
+}
+
+/* layout */
+.app-shell {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* title */
+.page-title {
   text-align: center;
+  margin-bottom: 20px;
+  color: #333;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* buttons */
+button {
+  padding: 8px 14px;
+  margin: 5px;
+  border: none;
+  background: #4f46e5; /* soft indigo */
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+button:hover {
+  background: #4338ca;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+/* inputs */
+input, textarea, select {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+  border: 1px solid #bbb;
+  border-radius: 5px;
+}
+
+/* form */
+form {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+/* table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+th {
+  background: #4f46e5;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* card */
+.card {
+  background: #ffffff;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 8px;
 }
 
-:root {
-  color-scheme: dark;
-  font-family: "Inter", system-ui, sans-serif;
-  color: #e2e8f0;
-  background: #0f172a;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  margin: 0;
-  min-height: 100%;
-}
-
-body {
-  margin: 0;
-  background: radial-gradient(circle at top left, #1d2939 0%, #111827 45%, #0f172a 100%);
-}
-
-.app-shell {
-  padding: 28px 26px 44px;
-  max-width: 1180px;
-  margin: 0 auto;
-}
-
-.page-title {
-  margin: 0 0 12px;
-  font-size: clamp(2rem, 2.7vw, 3rem);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: #f8fafc;
-}
-
-.topbar,
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 18px;
-}
-
-.toolbar {
-  justify-content: space-between;
-}
-
-.button-pill,
-.input-field,
-.select-field {
-  border-radius: 9999px;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  background: rgba(15, 23, 42, 0.88);
-  padding: 10px 16px;
-  font-size: 0.95rem;
-  color: #e2e8f0;
-}
-
-.button-pill {
-  background: linear-gradient(135deg, #4338ca, #2563eb);
-  color: #ffffff;
-  border-color: transparent;
-  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.18);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-}
-
-.button-pill:hover {
-  transform: translateY(-1px);
-  background: linear-gradient(135deg, #3730a3, #1d4ed8);
-}
-
-.input-field,
-.select-field {
-  min-width: 180px;
-}
-
-.input-field::placeholder {
-  color: #94a3b8;
-}
-
-.input-field:focus,
-.select-field:focus {
-  outline: none;
-  border-color: rgba(59, 130, 246, 0.8);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
-}
-
-.card,
-.form-card {
-  background: rgba(15, 23, 42, 0.92);
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 28px 90px rgba(15, 23, 42, 0.25);
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  margin-bottom: 26px;
-}
-
-.card h2,
-.form-card h2 {
-  margin-top: 0;
-  margin-bottom: 16px;
-  font-size: 1.6rem;
-  color: #f8fafc;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  background: transparent;
-}
-
-.table th,
-.table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
-  text-align: left;
-  color: #e2e8f0;
-}
-
-.table th {
-  background: rgba(255, 255, 255, 0.04);
-  color: #cbd5e1;
-  font-size: 0.85rem;
-  letter-spacing: 0.05em;
-}
-
-.table tr:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.field-row {
-  display: grid;
-  gap: 14px;
-}
-
-textarea {
-  min-height: 120px;
-  border-radius: 18px;
-  padding: 14px 16px;
-  resize: vertical;
-  font-family: inherit;
-  color: #e2e8f0;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.24);
-}
-
-.product-card img {
-  border-radius: 20px;
+/* image */
+img {
   max-width: 100%;
-  margin-bottom: 18px;
-  display: block;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #cbd5e1;
-}
-
-.form-card button,
-.card button {
-  margin-top: 16px;
-}
-
-@media (max-width: 850px) {
-  .toolbar,
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .button-pill,
-  .input-field,
-  .select-field {
-    width: 100%;
-  }
+  margin-top: 10px;
 }

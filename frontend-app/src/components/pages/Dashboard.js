@@ -8,32 +8,17 @@ function Dashboard() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("");
-  const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem("cart") || "[]"));
-  const [isAdmin, setIsAdmin] = useState(localStorage.getItem("isAdmin") === "true");
-
-  const ADMIN_AUTH_HEADER = {
-    Authorization: "Bearer admin123",
-  };
-
-  const handleAdminLogin = () => {
-    const password = window.prompt("Enter admin password:");
-    if (password === "admin123") {
-      localStorage.setItem("isAdmin", "true");
-      setIsAdmin(true);
-      alert("Admin mode enabled");
-    } else {
-      alert("Invalid admin password");
-    }
-  };
-
-  const handleAdminLogout = () => {
-    localStorage.removeItem("isAdmin");
-    setIsAdmin(false);
-    alert("Admin mode disabled");
-  };
+  const [cart, setCart] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     getData();
+
+    const savedCart = JSON.parse(localStorage.getItem("cart") || "[]");
+    setCart(savedCart);
+
+    const admin = localStorage.getItem("isAdmin") === "true";
+    setIsAdmin(admin);
   }, []);
 
   const getData = () => {
@@ -42,49 +27,67 @@ function Dashboard() {
       .then((result) => setData(result));
   };
 
-  const categories = [...new Set(data.map((item) => item.category).filter(Boolean))];
-
-  const filteredData = data
-    .filter((item) =>
-      item.name.toLowerCase().includes(search.toLowerCase()) &&
-      (category === "" || item.category === category)
-    )
-    .sort((a, b) => {
-      if (sort === "low") return a.price - b.price;
-      if (sort === "high") return b.price - a.price;
-      return 0;
-    });
-
-  const saveCart = (next) => {
-    setCart(next);
-    localStorage.setItem("cart", JSON.stringify(next));
+  // ADMIN LOGIN
+  const handleAdminLogin = () => {
+    const pass = prompt("Enter admin password");
+    if (pass === "admin123") {
+      localStorage.setItem("isAdmin", "true");
+      setIsAdmin(true);
+      alert("Admin login success");
+    } else {
+      alert("Wrong password");
+    }
   };
 
-  const addToCart = (item) => {
-    saveCart([...cart, item]);
+  const handleAdminLogout = () => {
+    localStorage.removeItem("isAdmin");
+    setIsAdmin(false);
+    alert("Logged out");
   };
 
-  // ❌ Delete
+  // DELETE
   const handleDelete = (id) => {
     if (!isAdmin) {
-      alert("Admin access required to delete products.");
+      alert("Admin only");
       return;
     }
 
-    if (!window.confirm("Are you sure you want to delete this product?")) {
-      return;
-    }
-
-    fetch(`http://127.0.0.1:8000/api/products/${id}/`, {
+    fetch("http://127.0.0.1:8000/api/products/" + id + "/", {
       method: "DELETE",
-      headers: ADMIN_AUTH_HEADER,
+      headers: {
+        Authorization: "Bearer admin123",
+      },
     }).then(() => {
       alert("Deleted");
       getData();
     });
   };
 
-  // 📄 Product PDF
+  // CART
+  const addToCart = (item) => {
+    const newCart = [...cart, item];
+    setCart(newCart);
+    localStorage.setItem("cart", JSON.stringify(newCart));
+  };
+
+  // FILTER
+  let filteredData = data.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  if (category) {
+    filteredData = filteredData.filter(
+      (item) => item.category === category
+    );
+  }
+
+  if (sort === "low") {
+    filteredData.sort((a, b) => a.price - b.price);
+  } else if (sort === "high") {
+    filteredData.sort((a, b) => b.price - a.price);
+  }
+
+  // PDF
   const downloadPDF = () => {
     const doc = new jsPDF();
 
@@ -100,69 +103,56 @@ function Dashboard() {
     doc.save("products.pdf");
   };
 
-  // 🛒 Cart PDF (🔥 NEW)
   const downloadCartPDF = () => {
     const doc = new jsPDF();
 
     autoTable(doc, {
       head: [["Name", "Price"]],
-      body: cart.map((item) => [
-        item.name,
-        item.price
-      ]),
+      body: cart.map((item) => [item.name, item.price]),
     });
 
     doc.save("cart.pdf");
   };
 
+  const categories = [...new Set(data.map((item) => item.category))];
+
   return (
-    <div className="card">
-      <div className="topbar">
-        <h2 className="page-title">Dashboard</h2>
-        {!isAdmin ? (
-          <button className="button-pill" onClick={handleAdminLogin}>Admin Login</button>
-        ) : (
-          <button className="button-pill" onClick={handleAdminLogout}>Logout Admin</button>
-        )}
-        <Link to="/add">
-          <button className="button-pill">Add Product</button>
-        </Link>
-        <Link to="/cart">
-          <button className="button-pill">Go to Cart</button>
-        </Link>
-      </div>
+    <div>
+      <h2>Dashboard</h2>
 
-      <div className="toolbar">
-        <input
-          className="input-field"
-          placeholder="Search"
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* ADMIN */}
+      {!isAdmin ? (
+        <button onClick={handleAdminLogin}>Admin Login</button>
+      ) : (
+        <button onClick={handleAdminLogout}>Logout</button>
+      )}
 
-        <select className="select-field" onChange={(e) => setCategory(e.target.value)}>
-          <option value="">All</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+      <Link to="/add"><button>Add Product</button></Link>
+      <Link to="/cart"><button>Cart</button></Link>
 
-        <select className="select-field" onChange={(e) => setSort(e.target.value)}>
-          <option value="">Sort</option>
-          <option value="low">Low to High</option>
-          <option value="high">High to Low</option>
-        </select>
-      </div>
-
+      {/* FILTER */}
       <br /><br />
 
-      <div className="toolbar">
-        <button className="button-pill" onClick={downloadPDF}>Download Product PDF</button>
-        <button className="button-pill" onClick={downloadCartPDF}>Download Cart PDF</button>
-      </div>
+      <input placeholder="Search" onChange={(e) => setSearch(e.target.value)} />
 
-      <br />
+      <select onChange={(e) => setCategory(e.target.value)}>
+        <option value="">All</option>
+        {categories.map((c, i) => (
+          <option key={i}>{c}</option>
+        ))}
+      </select>
 
-      <table className="table">
+      <select onChange={(e) => setSort(e.target.value)}>
+        <option value="">Sort</option>
+        <option value="low">Low to High</option>
+        <option value="high">High to Low</option>
+      </select>
+      <br /><br />
+      <button onClick={downloadPDF}>Download Products PDF</button>
+      <button onClick={downloadCartPDF}>Download Cart PDF</button>
+
+      {/* TABLE */}
+      <table border="1">
         <thead>
           <tr>
             <th>Name</th>
@@ -173,10 +163,9 @@ function Dashboard() {
             <th>Action</th>
           </tr>
         </thead>
-
         <tbody>
-          {filteredData.map((item) => (
-            <tr key={item.id}>
+          {filteredData.map((item, index) => (
+            <tr key={index}>
               <td>{item.name}</td>
               <td>{item.code}</td>
               <td>{item.category}</td>
@@ -185,24 +174,21 @@ function Dashboard() {
 
               <td>
                 {isAdmin && (
-                  <button className="button-pill" onClick={() => handleDelete(item.id)}>
+                  <button onClick={() => handleDelete(item.id)}>
                     Delete
                   </button>
                 )}
-
                 {isAdmin ? (
                   <Link to={`/edit/${item.id}`}>
-                    <button className="button-pill">Edit</button>
+                    <button>Edit</button>
                   </Link>
                 ) : (
-                  <span className="badge">Admin only</span>
+                  <span>Admin only</span>
                 )}
-
                 <Link to={`/product/${item.id}`}>
-                  <button className="button-pill">View</button>
+                  <button>View</button>
                 </Link>
-
-                <button className="button-pill" onClick={() => addToCart(item)}>
+                <button onClick={() => addToCart(item)}>
                   Add to Cart
                 </button>
               </td>
@@ -210,16 +196,13 @@ function Dashboard() {
           ))}
         </tbody>
       </table>
-
-      <br />
-
-      {/* 🛒 Cart */}
+      {/* CART VIEW */}
       <h3>Cart</h3>
       {cart.length === 0 ? (
-        <p>No items in cart</p>
+        <p>No items</p>
       ) : (
-        cart.map((item) => (
-          <div key={item.id}>
+        cart.map((item, i) => (
+          <div key={i}>
             {item.name} - ₹{item.price}
           </div>
         ))
@@ -227,5 +210,4 @@ function Dashboard() {
     </div>
   );
 }
-
 export default Dashboard;

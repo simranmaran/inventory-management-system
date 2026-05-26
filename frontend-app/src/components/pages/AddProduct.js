@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 function AddProduct() {
   const [form, setForm] = useState({
     name: "",
@@ -10,57 +9,39 @@ function AddProduct() {
     description: "",
     image: null
   });
-
   const handleChange = (e) => {
-    const name = e.target.name;
-
-    if (name === "image") {
+    if(e.target.name === "image") {
       setForm({ ...form, image: e.target.files[0] });
     } else {
-      setForm({ ...form, [name]: e.target.value });
+      setForm({ ...form, [e.target.name]: e.target.value });
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const fd = new FormData();
-
-    fd.append("name", form.name);
-    fd.append("code", form.code);
-    fd.append("category", form.category);
-    fd.append("price", form.price);
-    fd.append("quantity", form.quantity);
-    fd.append("description", form.description);
-    fd.append("image", form.image);
-
+    for(let key in form) {
+      fd.append(key, form[key]);
+    }
     fetch("http://127.0.0.1:8000/api/products/", {
       method: "POST",
       body: fd
     })
-      .then(() => {
-        alert("Product add ho gaya");
-      })
-      .catch(() => {
-        alert("Error aaya");
-      });
+      .then(() => alert("Product added successfully"))
+      .catch(() => alert("Error"));
   };
-
   return (
-    <form className="form-card" onSubmit={handleSubmit}>
-      <h2 className="card-title">Add Product</h2>
-      <div className="field-row">
-        <input className="input-field" name="name" placeholder="Product name" onChange={handleChange} />
-        <input className="input-field" name="code" placeholder="Product code" onChange={handleChange} />
-        <input className="input-field" name="category" placeholder="Category" onChange={handleChange} />
-        <input className="input-field" name="price" placeholder="Price" onChange={handleChange} />
-        <input className="input-field" name="quantity" placeholder="Quantity" onChange={handleChange} />
-        <textarea className="input-field" name="description" placeholder="Description" onChange={handleChange} />
-        <input className="input-field" type="file" name="image" onChange={handleChange} />
-      </div>
-      <button className="button-pill">Add Product</button>
+    <form  onSubmit={handleSubmit}>
+      <h2>Add Product</h2>
+        <input name="name" placeholder="Name" onChange={handleChange} />
+        <input name="code" placeholder="Code" onChange={handleChange} />
+        <input  name="category" placeholder="Category" onChange={handleChange} />
+        <input  name="price" placeholder="Price" onChange={handleChange} />
+        <input  name="quantity" placeholder="Quantity" onChange={handleChange} />
+        <textarea  name="description" placeholder="Description" onChange={handleChange} />
+        <input  type="file" name="image" onChange={handleChange} />
+      <button> Add Product</button>
     </form>
   );
 }
-
 export default AddProduct;
