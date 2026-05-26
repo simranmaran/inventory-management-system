@@ -47,31 +47,18 @@ function AddProduct() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Add Product</h2>
-
-      <input name="name" placeholder="name" onChange={handleChange} />
-      <br />
-
-      <input name="code" placeholder="code" onChange={handleChange} />
-      <br />
-
-      <input name="category" placeholder="category" onChange={handleChange} />
-      <br />
-
-      <input name="price" placeholder="price" onChange={handleChange} />
-      <br />
-
-      <input name="quantity" placeholder="qty" onChange={handleChange} />
-      <br />
-
-      <textarea name="description" onChange={handleChange} />
-      <br />
-
-      <input type="file" name="image" onChange={handleChange} />
-      <br />
-
-      <button>Add</button>
+    <form className="form-card" onSubmit={handleSubmit}>
+      <h2 className="card-title">Add Product</h2>
+      <div className="field-row">
+        <input className="input-field" name="name" placeholder="Product name" onChange={handleChange} />
+        <input className="input-field" name="code" placeholder="Product code" onChange={handleChange} />
+        <input className="input-field" name="category" placeholder="Category" onChange={handleChange} />
+        <input className="input-field" name="price" placeholder="Price" onChange={handleChange} />
+        <input className="input-field" name="quantity" placeholder="Quantity" onChange={handleChange} />
+        <textarea className="input-field" name="description" placeholder="Description" onChange={handleChange} />
+        <input className="input-field" type="file" name="image" onChange={handleChange} />
+      </div>
+      <button className="button-pill">Add Product</button>
     </form>
   );
 }

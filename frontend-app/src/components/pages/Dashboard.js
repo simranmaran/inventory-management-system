@@ -8,7 +8,29 @@ function Dashboard() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("");
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem("cart") || "[]"));
+  const [isAdmin, setIsAdmin] = useState(localStorage.getItem("isAdmin") === "true");
+
+  const ADMIN_AUTH_HEADER = {
+    Authorization: "Bearer admin123",
+  };
+
+  const handleAdminLogin = () => {
+    const password = window.prompt("Enter admin password:");
+    if (password === "admin123") {
+      localStorage.setItem("isAdmin", "true");
+      setIsAdmin(true);
+      alert("Admin mode enabled");
+    } else {
+      alert("Invalid admin password");
+    }
+  };
+
+  const handleAdminLogout = () => {
+    localStorage.removeItem("isAdmin");
+    setIsAdmin(false);
+    alert("Admin mode disabled");
+  };
 
   useEffect(() => {
     getData();
@@ -20,26 +42,42 @@ function Dashboard() {
       .then((result) => setData(result));
   };
 
-  // 🔍 Filter
-  let filteredData = data.filter((item) => {
-    return (
+  const categories = [...new Set(data.map((item) => item.category).filter(Boolean))];
+
+  const filteredData = data
+    .filter((item) =>
       item.name.toLowerCase().includes(search.toLowerCase()) &&
       (category === "" || item.category === category)
-    );
-  });
+    )
+    .sort((a, b) => {
+      if (sort === "low") return a.price - b.price;
+      if (sort === "high") return b.price - a.price;
+      return 0;
+    });
 
-  // 🔽 Sort
-  if (sort === "low") {
-    filteredData.sort((a, b) => a.price - b.price);
-  }
-  if (sort === "high") {
-    filteredData.sort((a, b) => b.price - a.price);
-  }
+  const saveCart = (next) => {
+    setCart(next);
+    localStorage.setItem("cart", JSON.stringify(next));
+  };
+
+  const addToCart = (item) => {
+    saveCart([...cart, item]);
+  };
 
   // ❌ Delete
   const handleDelete = (id) => {
+    if (!isAdmin) {
+      alert("Admin access required to delete products.");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this product?")) {
+      return;
+    }
+
     fetch(`http://127.0.0.1:8000/api/products/${id}/`, {
       method: "DELETE",
+      headers: ADMIN_AUTH_HEADER,
     }).then(() => {
       alert("Deleted");
       getData();
@@ -78,41 +116,53 @@ function Dashboard() {
   };
 
   return (
-    <div>
-      <h2>Dashboard</h2>
+    <div className="card">
+      <div className="topbar">
+        <h2 className="page-title">Dashboard</h2>
+        {!isAdmin ? (
+          <button className="button-pill" onClick={handleAdminLogin}>Admin Login</button>
+        ) : (
+          <button className="button-pill" onClick={handleAdminLogout}>Logout Admin</button>
+        )}
+        <Link to="/add">
+          <button className="button-pill">Add Product</button>
+        </Link>
+        <Link to="/cart">
+          <button className="button-pill">Go to Cart</button>
+        </Link>
+      </div>
 
-      {/* 🔍 Search */}
-      <input
-        placeholder="Search"
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <div className="toolbar">
+        <input
+          className="input-field"
+          placeholder="Search"
+          onChange={(e) => setSearch(e.target.value)}
+        />
 
-      {/* 🎯 Filter */}
-      <select onChange={(e) => setCategory(e.target.value)}>
-        <option value="">All</option>
-        <option value="Electronics">Electronics</option>
-        <option value="Fashion">Fashion</option>
-      </select>
+        <select className="select-field" onChange={(e) => setCategory(e.target.value)}>
+          <option value="">All</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
 
-      {/* 🔽 Sort */}
-      <select onChange={(e) => setSort(e.target.value)}>
-        <option value="">Sort</option>
-        <option value="low">Low to High</option>
-        <option value="high">High to Low</option>
-      </select>
+        <select className="select-field" onChange={(e) => setSort(e.target.value)}>
+          <option value="">Sort</option>
+          <option value="low">Low to High</option>
+          <option value="high">High to Low</option>
+        </select>
+      </div>
 
       <br /><br />
 
-      {/* 📄 PDF */}
-      <button onClick={downloadPDF}>Download Product PDF</button>
+      <div className="toolbar">
+        <button className="button-pill" onClick={downloadPDF}>Download Product PDF</button>
+        <button className="button-pill" onClick={downloadCartPDF}>Download Cart PDF</button>
+      </div>
 
-      {/* 🛒 Cart PDF */}
-      <button onClick={downloadCartPDF}>Download Cart PDF</button>
+      <br />
 
-      <br /><br />
-
-      {/* 📋 Table */}
-      <table border="1">
+      <table className="table">
         <thead>
           <tr>
             <th>Name</th>
@@ -134,19 +184,25 @@ function Dashboard() {
               <td>{item.quantity}</td>
 
               <td>
-                <button onClick={() => handleDelete(item.id)}>
-                  Delete
-                </button>
+                {isAdmin && (
+                  <button className="button-pill" onClick={() => handleDelete(item.id)}>
+                    Delete
+                  </button>
+                )}
 
-                <Link to={`/edit/${item.id}`}>
-                  <button>Edit</button>
-                </Link>
+                {isAdmin ? (
+                  <Link to={`/edit/${item.id}`}>
+                    <button className="button-pill">Edit</button>
+                  </Link>
+                ) : (
+                  <span className="badge">Admin only</span>
+                )}
 
                 <Link to={`/product/${item.id}`}>
-                  <button>View</button>
+                  <button className="button-pill">View</button>
                 </Link>
 
-                <button onClick={() => setCart([...cart, item])}>
+                <button className="button-pill" onClick={() => addToCart(item)}>
                   Add to Cart
                 </button>
               </td>

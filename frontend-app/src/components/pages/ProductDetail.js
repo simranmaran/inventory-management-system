@@ -12,21 +12,21 @@ function ProductDetail() {
   }, [id]);
 
   return (
-    <div>
-      <h2>{data.name}</h2>
+    <div className="card product-card">
+      <h2 className="page-title">{data.name}</h2>
 
-      {/* 🖼️ Image */}
       {data.image && (
         <img
           src={`http://127.0.0.1:8000${data.image}`}
-          width="200"
           alt="product"
         />
       )}
 
+      <p className="badge">Code: {data.code}</p>
+      <p className="badge">Price: ₹{data.price}</p>
+      <p className="badge">Qty: {data.quantity}</p>
+      <p className="badge">Category: {data.category}</p>
       <p>{data.description}</p>
-      <p>Price: {data.price}</p>
-      <p>Category: {data.category}</p>
     </div>
   );
 }
